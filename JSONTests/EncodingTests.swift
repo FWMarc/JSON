@@ -71,18 +71,18 @@ class EncodingTests: XCTestCase {
     }
     
     func testNSURL() {
-        let initialValue = NSURL(string: "https://storehouse.co")!
+        let initialValue = URL(string: "https://storehouse.co")!
         let json = initialValue.json
         guard let string = json.string else { XCTFail(); return }
-        guard let finalValue = NSURL(string: string) else { XCTFail(); return }
+        guard let finalValue = URL(string: string) else { XCTFail(); return }
         XCTAssertEqual(initialValue, finalValue)
     }
     
     func testNSDate() {
-        let initialValue = NSDate(timeIntervalSince1970: 1455666528)
+        let initialValue = Date(timeIntervalSince1970: 1455666528)
         let json = initialValue.json
         guard let number = json.number else { XCTFail(); return }
-        let finalValue = NSDate(timeIntervalSince1970: number)
+        let finalValue = Date(timeIntervalSince1970: number)
         XCTAssertEqual(initialValue, finalValue)
     }
 }

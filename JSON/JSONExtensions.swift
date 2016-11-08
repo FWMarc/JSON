@@ -45,7 +45,7 @@ extension Double : JSONDecodable {
 
 extension Double : JSONEncodable {
     public var json: JSON {
-        return .Number(self)
+        return .number(self)
     }
 }
 
@@ -60,7 +60,7 @@ extension Bool : JSONDecodable {
 
 extension Bool : JSONEncodable {
     public var json: JSON {
-        return .Boolean(self)
+        return .boolean(self)
     }
 }
 
@@ -75,7 +75,7 @@ extension String : JSONDecodable {
 
 extension String : JSONEncodable {
     public var json: JSON {
-        return .String(self)
+        return .string(self)
     }
 }
 
@@ -105,7 +105,7 @@ extension CGFloat : JSONDecodable {
 
 extension CGFloat : JSONEncodable {
     public var json: JSON {
-        return .Number(Double(self))
+        return .number(Double(self))
     }
 }
 
@@ -121,7 +121,7 @@ extension CGSize : JSONDecodable {
 
 extension CGSize : JSONEncodable {
     public var json: JSON {
-        var j = JSON.Object([:])
+        var j = JSON.object([:])
         j["width"] = width.json
         j["height"] = height.json
         return j
@@ -140,7 +140,7 @@ extension CGPoint : JSONDecodable {
 
 extension CGPoint : JSONEncodable {
     public var json: JSON {
-        var j = JSON.Object([:])
+        var j = JSON.object([:])
         j["x"] = x.json
         j["y"] = y.json
         return j
@@ -160,7 +160,7 @@ extension CGRect : JSONDecodable {
 
 extension CGRect : JSONEncodable {
     public var json: JSON {
-        var j = JSON.Object([:])
+        var j = JSON.object([:])
         j["origin"] = origin.json
         j["size"] = size.json
         return j
@@ -176,7 +176,7 @@ extension Array : JSONEncodable {
             guard let convertible = el as? JSONEncodable else { fatalError() }
             result.append(convertible.json)
         }
-        return .Array(result)
+        return .array(result)
     }
 }
 
@@ -202,7 +202,7 @@ extension Dictionary : JSONEncodable {
             guard let val = val as? JSONEncodable else { fatalError("Values must conform to 'JSONEncodable'") }
             result[key] = val.json
         }
-        return JSON.Object(result)
+        return JSON.object(result)
     }
 }
 
@@ -222,9 +222,9 @@ extension Dictionary : JSONDecodable {
 
 // MARK: NSURL
 
-extension NSURL : JSONEncodable {
+extension URL : JSONEncodable {
     public var json: JSON {
-        return .String(absoluteString)
+        return .string(absoluteString)
     }
 }
 
@@ -239,9 +239,9 @@ extension JSON {
 
 // MARK: NSDate
 
-extension NSDate : JSONEncodable {
+extension Date : JSONEncodable {
     public var json: JSON {
-        return .Number(timeIntervalSince1970)
+        return .number(timeIntervalSince1970)
     }
 }
 

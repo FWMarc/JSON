@@ -32,12 +32,12 @@ import Foundation
 
 /// Recursive structure that represents a JSON tree.
 public enum JSON {
-    case Number(Double)
-    case String(Swift.String)
-    case Boolean(Bool)
-    case Array([JSON])
-    case Object([Swift.String:JSON])
-    case Null
+    case number(Double)
+    case string(Swift.String)
+    case boolean(Bool)
+    case array([JSON])
+    case object([Swift.String:JSON])
+    case null
 }
 
 
@@ -46,10 +46,10 @@ public extension JSON {
     /// Initialize a JSON value from NSData.
     /// - Parameter data: A data object containing JSON data (typically fetched from a server or file).
     /// - Note: returns nil if the data object could not be successfully parsed as JSON.
-    public init?(data: NSData) {
+    public init?(data: Data) {
         do {
-            let obj = try NSJSONSerialization.JSONObjectWithData(data, options: [])
-            self.init(NSJSONObject: obj)
+            let obj = try JSONSerialization.jsonObject(with: data, options: [])
+            self.init(NSJSONObject: obj as AnyObject)
         } catch {
             return nil
         }
@@ -59,39 +59,39 @@ public extension JSON {
     /// - Parameter string: A string containing JSON data.
     /// - Note: returns nil if the string could not be successfully parsed as JSON.
     public init?(string: Swift.String) {
-        guard let data = string.dataUsingEncoding(NSUTF8StringEncoding) else { return nil }
+        guard let data = string.data(using: Swift.String.Encoding.utf8) else { return nil }
         self.init(data: data)
     }
     
     /// Initialize a JSON value from a JSON object returned by NSJSONSerialization.
     /// - Parameter NSJSONObject: A JSON object returned by NSJSONSerialization.
     /// - SeeAlso: `init?(data:)`
-    public init(NSJSONObject: AnyObject) {
+    public init(NSJSONObject: Any) {
         switch NSJSONObject {
         case let number as NSNumber:
-            let typeString = NSString(UTF8String: number.objCType)
+            let typeString = NSString(utf8String: number.objCType)
             guard let type = typeString else { fatalError() } // should not be possible
-            if type.isEqualToString("c") {
-                self = .Boolean(number.boolValue)
+            if type.isEqual(to: "c") {
+                self = .boolean(number.boolValue)
             } else {
-                self = .Number(number.doubleValue)
+                self = .number(number.doubleValue)
             }
         case let str as Swift.String:
-            self = .String(str)
+            self = .string(str)
         case let boolean as Bool:
-            self = .Boolean(boolean)
+            self = .boolean(boolean)
         case let array as [AnyObject]:
-            self = .Array(array.map {JSON(NSJSONObject: $0)})
-        case let dictionary as [NSObject: AnyObject]:
+            self = .array(array.map {JSON(NSJSONObject: $0)})
+        case let dictionary as [AnyHashable: Any]:
             var d: [Swift.String: JSON] = [:]
             for key in dictionary.keys {
                 guard let key = key as? Swift.String else { fatalError("Unexpected key type found in JSON Dictionary") }
                 guard let val = dictionary[key] else { fatalError("Error retrieving value from JSON Dictionary") }
-                d[key] = JSON(NSJSONObject: val)
+                d[key] = JSON(NSJSONObject: val as AnyObject)
             }
-            self = .Object(d)
+            self = .object(d)
         case _ as NSNull:
-            self = .Null
+            self = .null
         default:
             fatalError("Unsupported JSON object type")
         }
@@ -104,19 +104,19 @@ public extension JSON { // core JSON-type accessors
     
     public subscript(key: Swift.String) -> JSON? {
         get {
-            guard case let .Object(dictionary) = self else { return nil }
+            guard case let .object(dictionary) = self else { return nil }
             return dictionary[key]
         }
         set {
-            guard case var .Object(dictionary) = self else { fatalError("Keyed valued are only supported on objects") }
+            guard case var .object(dictionary) = self else { fatalError("Keyed valued are only supported on objects") }
             dictionary[key] = newValue
-            self = .Object(dictionary)
+            self = .object(dictionary)
         }
     }
     
     public subscript(index: Int) -> JSON? {
         get {
-            guard case let .Array(array) = self else { return nil }
+            guard case let .array(array) = self else { return nil }
             return array[index]
         }
     }
@@ -124,7 +124,7 @@ public extension JSON { // core JSON-type accessors
     /// The underlying string value for a JSON string, or nil if it's not a JSON string.
     public var string: Swift.String? {
         switch self {
-        case .String(let str):
+        case .string(let str):
             return str
         default:
             return nil
@@ -134,7 +134,7 @@ public extension JSON { // core JSON-type accessors
     /// The underlying number value (as a `Double`) for a JSON number, or nil if it's not a JSON number.
     public var number: Double? {
         switch self {
-        case .Number(let num):
+        case .number(let num):
             return num
         default:
             return nil
@@ -144,7 +144,7 @@ public extension JSON { // core JSON-type accessors
     /// The underlying boolean value for a JSON boolean, or nil if it's not a JSON boolean.
     public var boolean: Bool? {
         switch self {
-        case .Boolean(let bool):
+        case .boolean(let bool):
             return bool
         default:
             return nil
@@ -154,7 +154,7 @@ public extension JSON { // core JSON-type accessors
     /// The underlying array value for a JSON array, or nil if it's not a JSON array.
     public var array: [JSON]? {
         switch self {
-        case .Array(let array):
+        case .array(let array):
             return array
         default:
             return nil
@@ -164,7 +164,7 @@ public extension JSON { // core JSON-type accessors
     /// The underlying dictionary value for a JSON dictionary, or nil if it's not a JSON dictionary.
     public var object: [Swift.String: JSON]? {
         switch self {
-        case .Object(let dictionary):
+        case .object(let dictionary):
             return dictionary
         default:
             return nil
@@ -178,17 +178,17 @@ extension JSON : Equatable {}
 
 public func ==(lhs: JSON, rhs: JSON) -> Bool {
     switch (lhs, rhs) {
-    case (.Number(let num1), .Number(let num2)):
+    case (.number(let num1), .number(let num2)):
         return num1 == num2
-    case (.String(let str1), .String(let str2)):
+    case (.string(let str1), .string(let str2)):
         return str1 == str2
-    case (.Boolean(let b1), .Boolean(let b2)):
+    case (.boolean(let b1), .boolean(let b2)):
         return b1 == b2
-    case (.Array(let a1), .Array(let a2)):
+    case (.array(let a1), .array(let a2)):
         return a1 == a2
-    case (.Object(let o1), .Object(let o2)):
+    case (.object(let o1), .object(let o2)):
         return o1 == o2
-    case (.Null, .Null):
+    case (.null, .null):
         return true
     default:
         return false
@@ -196,16 +196,16 @@ public func ==(lhs: JSON, rhs: JSON) -> Bool {
 }
 
 
-extension JSON : SequenceType {
+extension JSON : Sequence {
     
-    public func generate() -> JSONGenerator {
+    public func makeIterator() -> JSONGenerator {
         return JSONGenerator(JSONs: array ?? [])
     }
     
-    public struct JSONGenerator: GeneratorType {
-        private let JSONs: [JSON]
-        private var nextIndex = 0
-        private init(JSONs: [JSON]) { self.JSONs = JSONs }
+    public struct JSONGenerator: IteratorProtocol {
+        fileprivate let JSONs: [JSON]
+        fileprivate var nextIndex = 0
+        fileprivate init(JSONs: [JSON]) { self.JSONs = JSONs }
         public mutating func next() -> JSON? {
             guard nextIndex < JSONs.count else { return nil }
             let j = JSONs[nextIndex]
@@ -220,23 +220,23 @@ extension JSON : SequenceType {
 extension JSON : CustomDebugStringConvertible, CustomStringConvertible {
     
     public var debugDescription: Swift.String {
-        return formattedOutputString(pretty: true)
+        return formattedOutputString(true)
     }
     
     public var description: Swift.String {
-        return formattedOutputString(pretty: true)
+        return formattedOutputString(true)
     }
     
     /// The JSON tree formatted as a JSON string.
     /// - SeeAlso: `description` and `debugDescription`.
     public var formattedJSON: Swift.String {
-        return formattedOutputString(pretty: false)
+        return formattedOutputString(false)
     }
     
-    private func formattedOutputString(pretty pretty: Bool) -> Swift.String {
+    fileprivate func formattedOutputString(_ pretty: Bool) -> Swift.String {
         do {
-            let data = try NSJSONSerialization.dataWithJSONObject(NSJSONValue, options: pretty ? [.PrettyPrinted] : [])
-            guard let string = NSString(data: data, encoding: NSUTF8StringEncoding) else { return "" }
+            let data = try JSONSerialization.data(withJSONObject: NSJSONValue, options: pretty ? [.prettyPrinted] : [])
+            guard let string = Swift.String(data: data, encoding: .utf8) else { return "" }
             return string as Swift.String
         } catch {
             return ""
@@ -251,21 +251,21 @@ extension JSON {
     /// The JSON tree formatted as NSObject-compatible objects.
     public var NSJSONValue: NSObject {
         switch self {
-        case .Number(let num):
-            return num
-        case .String(let str):
-            return str
-        case .Boolean(let bool):
-            return bool
-        case .Array(let array):
+        case .number(let num):
+            return num as NSObject
+        case .string(let str):
+            return str as NSObject
+        case .boolean(let bool):
+            return bool as NSObject
+        case .array(let array):
             return array.map({ $0.NSJSONValue }) as NSArray
-        case .Object(let dictionary):
-            var output: [NSObject: AnyObject] = [:]
+        case .object(let dictionary):
+            var output: [AnyHashable: Any] = [:]
             for (key, j) in dictionary {
                 output[key] = j.NSJSONValue
             }
-            return output
-        case .Null:
+            return output as NSObject
+        case .null:
             return NSNull()
         }
     }

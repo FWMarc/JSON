@@ -4,10 +4,10 @@ import XCTest
 
 class JSONTests: XCTestCase {
     
-    let sampleJSON: AnyObject = {
-        let path = NSBundle(forClass: JSONTests.self).URLForResource("sample", withExtension: "json")!
-        let data = NSData(contentsOfURL: path)!
-        return try! NSJSONSerialization.JSONObjectWithData(data, options: [])
+    let sampleJSON: Any = {
+        let path = Bundle(for: JSONTests.self).url(forResource: "sample", withExtension: "json")!
+        let data = try! Data(contentsOf: path)
+        return try! JSONSerialization.jsonObject(with: data, options: [])
     }()
     
     func testJSONTree() {
@@ -63,7 +63,7 @@ class JSONTests: XCTestCase {
     }
     
     func testTypes() {
-        let num = JSON.Number(1.0)
+        let num = JSON.number(1.0)
         XCTAssertEqual(num.number,1.0)
         XCTAssertNotNil(num.number)
         XCTAssertNil(num.string)
@@ -71,7 +71,7 @@ class JSONTests: XCTestCase {
         XCTAssertNil(num.array)
         XCTAssertNil(num.object)
         
-        let str = JSON.String("Foo")
+        let str = JSON.string("Foo")
         XCTAssertEqual(str.string,"Foo")
         XCTAssertNil(str.number)
         XCTAssertNotNil(str.string)
@@ -79,7 +79,7 @@ class JSONTests: XCTestCase {
         XCTAssertNil(str.array)
         XCTAssertNil(str.object)
         
-        let b = JSON.Boolean(true)
+        let b = JSON.boolean(true)
         XCTAssertEqual(b.boolean,true)
         XCTAssertNil(b.number)
         XCTAssertNil(b.string)
@@ -87,7 +87,7 @@ class JSONTests: XCTestCase {
         XCTAssertNil(b.array)
         XCTAssertNil(b.object)
         
-        let a = JSON.Array([])
+        let a = JSON.array([])
         XCTAssertEqual(a.array!,[])
         XCTAssertNil(a.number)
         XCTAssertNil(a.string)
@@ -95,7 +95,7 @@ class JSONTests: XCTestCase {
         XCTAssertNotNil(a.array)
         XCTAssertNil(a.object)
         
-        let obj = JSON.Object([:])
+        let obj = JSON.object([:])
         XCTAssertEqual(obj.object!,[:])
         XCTAssertNil(obj.number)
         XCTAssertNil(obj.string)
@@ -103,7 +103,7 @@ class JSONTests: XCTestCase {
         XCTAssertNil(obj.array)
         XCTAssertNotNil(obj.object)
         
-        let n = JSON.Null
+        let n = JSON.null
         XCTAssertNil(n.number)
         XCTAssertNil(n.string)
         XCTAssertNil(n.boolean)
