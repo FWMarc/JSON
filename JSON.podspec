@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
 s.name         = "JSON"
-s.version      = "1.1"
+s.version      = "1.2"
 s.summary      = "Simple Swift library for working with JSON data."
 s.description  = "JSON is a simple Swift library for working with JSON data. It can be initialized with either a string, NSData, or a JSON object returned by NSJSONSerialization. It provides a lightweight fast API that removes the need to cast untyped values typically returned by NSJSONSerialization."
 
