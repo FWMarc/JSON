@@ -120,7 +120,7 @@ class JSONTests: XCTestCase {
     func testFormattedJSON() {
         let j1 = JSON(NSJSONObject: sampleJSON)
         let jsonString = j1.formattedJSON
-        XCTAssert(jsonString.characters.count > 0)
+        XCTAssert(jsonString.count > 0)
         
         let j2 = JSON(string: jsonString)
         XCTAssert(j2 != nil)

@@ -153,6 +153,7 @@ extension CGRect : JSONDecodable {
     public init?(json: JSON?) {
         guard let origin = CGPoint(json: json?["origin"]) else { return nil }
         guard let size = CGSize(json: json?["size"]) else { return nil }
+        self.init()
         self.origin = origin
         self.size = size
     }
